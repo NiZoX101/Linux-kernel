@@ -4,27 +4,21 @@
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
-
 #define procfs_name "tsu"
-
 static struct proc_dir_entry* our_proc_file = NULL;
 
 static ssize_t procfile_read(struct file* file_pointer, char __user* buffer, size_t buffer_length, loff_t* offset)
 {
 	int len;
-	char s[32];  // Буфер для хранения строки с количеством ядер
-
+	char s[32]; 
 	len = snprintf(s, sizeof(s), "Number of CPUs: %d\n", num_online_cpus());
 
 	if (*offset > 0 || buffer_length < len)
-		return 0;  // Файл прочитан до конца или буфер слишком мал
-
+		return 0;
 	if (copy_to_user(buffer, s, len))
 		return -EFAULT;
-
 	*offset += len;
 	pr_info("procfile read %s\n", file_pointer->f_path.dentry->d_name.name);
-
 	return len;
 }
 
@@ -43,13 +37,11 @@ static const struct file_operations proc_file_fops =
 static int __init procfs1_init(void)
 {
 	our_proc_file = proc_create(procfs_name, 0644, NULL, &proc_file_fops);
-
 	if (!our_proc_file)
 	{
 		pr_err("Error creating proc file\n");
 		return -ENOMEM;
 	}
-
 	pr_info("/proc/%s created\n", procfs_name);
 	return 0;
 }
